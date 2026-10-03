@@ -31,7 +31,7 @@ class FrontendModelSelectionTests(unittest.TestCase):
             },
         }
 
-    def _run_frontend(self, submitted_models=None):
+    def _run_frontend(self, submitted_models=None, responses=None):
         import json
 
         # Build a self-contained harness in JavaScript; Python supplies only mock responses.
@@ -57,7 +57,13 @@ const document = {
 const calls = [];
 const fetch = async endpoint => {
   calls.push(endpoint);
-  return {ok:true, json: async () => responses[endpoint]};
+  const response = responses[endpoint];
+  if (response.networkError) throw new TypeError('network failure');
+  return {
+    ok: response.status >= 200 && response.status < 300,
+    status: response.status,
+    text: async () => response.body
+  };
 };
 vm.runInNewContext(frontendScript, {document, fetch, JSON, Error});
 (async () => {
@@ -65,12 +71,16 @@ vm.runInNewContext(frontendScript, {document, fetch, JSON, Error});
     selectedModel = model;
     await elements['prediction-form'].listeners.submit({preventDefault(){}});
   }
-  process.stdout.write(JSON.stringify({calls, title:elements['result-title'].textContent, confidence:elements['result-confidence'].textContent, risk:elements['result-risk'].textContent, model:elements['result-model'].textContent}));
+  process.stdout.write(JSON.stringify({calls, title:elements['result-title'].textContent, confidence:elements['result-confidence'].textContent, risk:elements['result-risk'].textContent, model:elements['result-model'].textContent, error:elements['error-card'].textContent, resultHidden:elements['result-card'].hidden}));
 })();
 """
+        response_configs = responses or {
+            endpoint: {"status": 200, "body": json.dumps(payload)}
+            for endpoint, payload in self.responses.items()
+        }
         env_payload = {
             "script": SCRIPT_PATH.read_text(encoding="utf-8"),
-            "responses": self.responses,
+            "responses": response_configs,
             "models": submitted_models or [self.selected_model],
         }
         executable = (
@@ -115,6 +125,49 @@ vm.runInNewContext(frontendScript, {document, fetch, JSON, Error});
         self.assertEqual(result_hybrid["title"], "PHISHING URL")
         self.assertEqual(result_hybrid["confidence"], "Confidence: 82.00%")
         self.assertIn("Phishing prob: 82.0%", result_hybrid["risk"])
+
+    def test_http_json_error_is_displayed_to_user(self):
+        result = self._run_frontend(responses={
+            "/api/predict-url": {
+                "status": 500,
+                "body": '{"success":false,"error":"Prediction failed. Please try again."}',
+            },
+        })
+        self.assertEqual(result["error"], "Prediction failed. Please try again.")
+        self.assertTrue(result["resultHidden"])
+
+    def test_http_500_non_json_response_displays_generic_server_error(self):
+        result = self._run_frontend(responses={
+            "/api/predict-url": {"status": 500, "body": "<html>server error</html>"},
+        })
+        self.assertEqual(result["error"], "The prediction server encountered an error. Please try again.")
+
+    def test_invalid_json_response_displays_useful_error(self):
+        result = self._run_frontend(responses={
+            "/api/predict-url": {"status": 200, "body": "{invalid"},
+        })
+        self.assertEqual(result["error"], "The prediction server returned an invalid response. Please try again.")
+
+    def test_empty_response_displays_retry_message(self):
+        result = self._run_frontend(responses={
+            "/api/predict-url": {"status": 200, "body": ""},
+        })
+        self.assertEqual(result["error"], "Server returned an empty response. Please try again.")
+
+    def test_network_failure_displays_connection_message(self):
+        result = self._run_frontend(responses={
+            "/api/predict-url": {"networkError": True},
+        })
+        self.assertEqual(result["error"], "Unable to connect to the prediction server. Please try again.")
+
+    def test_http_client_error_displays_backend_error(self):
+        result = self._run_frontend(responses={
+            "/api/predict-url": {
+                "status": 400,
+                "body": '{"success":false,"error":"URL must use HTTP or HTTPS."}',
+            },
+        })
+        self.assertEqual(result["error"], "URL must use HTTP or HTTPS.")
 
 
 if __name__ == "__main__":

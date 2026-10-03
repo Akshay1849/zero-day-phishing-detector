@@ -19,6 +19,7 @@ from pathlib import Path
 import joblib
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
+from werkzeug.exceptions import HTTPException
 
 from src.feature_extraction import (
     ALL_FEATURE_ORDER,
@@ -91,6 +92,32 @@ if hybrid_features != url_features:
     )
 
 app = Flask(__name__)
+
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(error: HTTPException):
+    if request.path.startswith("/api/"):
+        return jsonify({"success": False, "error": error.description}), error.code
+    return error.get_response()
+
+
+@app.errorhandler(500)
+def handle_internal_server_error(error):
+    if request.path.startswith("/api/"):
+        original_exception = getattr(error, "original_exception", None)
+        if original_exception is not None:
+            app.logger.error(
+                "Unhandled exception during API request",
+                exc_info=(
+                    type(original_exception),
+                    original_exception,
+                    original_exception.__traceback__,
+                ),
+            )
+        else:
+            app.logger.error("Unhandled server error during API request: %s", error)
+        return jsonify({"success": False, "error": "Prediction failed. Please try again."}), 500
+    return error.get_response()
 
 
 def load_phase10_rf_model():

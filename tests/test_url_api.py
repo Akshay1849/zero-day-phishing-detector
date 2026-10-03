@@ -61,6 +61,19 @@ class URLApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertFalse(response.get_json()['success'])
 
+    def test_unexpected_prediction_error_returns_safe_json_and_is_logged(self):
+        with patch.object(_app_module, '_run_model', side_effect=RuntimeError('model inference exploded')):
+            with self.assertLogs(app.logger.name, level='ERROR') as captured:
+                response = self.client.post('/api/predict-url', json={'url': 'https://example.com/login'})
+
+        self.assertEqual(response.status_code, 500)
+        self.assertTrue(response.is_json)
+        self.assertEqual(
+            response.get_json(),
+            {'success': False, 'error': 'Prediction failed. Please try again.'},
+        )
+        self.assertIn('model inference exploded', '\n'.join(captured.output))
+
 
 if __name__ == '__main__':
     unittest.main()

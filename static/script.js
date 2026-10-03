@@ -84,21 +84,56 @@ document.addEventListener('DOMContentLoaded', () => {
     errorCard.hidden = true;
 
     try {
-      const response = await fetch(selection.endpoint, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({url})
-      });
-      const payload = await response.json();
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error || 'The request was rejected.');
+      let response;
+      try {
+        response = await fetch(selection.endpoint, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({url})
+        });
+      } catch (error) {
+        showError('Unable to connect to the prediction server. Please try again.');
+        return;
       }
-      if (payload.model !== selection.model) {
-        throw new Error('The selected model response did not match the requested model.');
+
+      let responseText;
+      try {
+        responseText = await response.text();
+      } catch (error) {
+        showError('Unable to connect to the prediction server. Please try again.');
+        return;
       }
-      showResult(payload);
-    } catch (error) {
-      showError(error.message);
+
+      if (!responseText.trim()) {
+        showError('Server returned an empty response. Please try again.');
+        return;
+      }
+
+      let payload;
+      try {
+        payload = JSON.parse(responseText);
+      } catch (error) {
+        showError(
+          !response.ok && response.status >= 500
+            ? 'The prediction server encountered an error. Please try again.'
+            : 'The prediction server returned an invalid response. Please try again.'
+        );
+        return;
+      }
+
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        showError(
+          !response.ok && response.status >= 500
+            ? 'The prediction server encountered an error. Please try again.'
+            : 'The prediction server returned an invalid response. Please try again.'
+        );
+      } else if (!response.ok || !payload.success) {
+        showError(payload.error || 'The request was rejected.');
+      } else if (payload.model !== selection.model) {
+        showError('The selected model response did not match the requested model.');
+      } else {
+        showResult(payload);
+      }
     } finally {
       setLoading(false);
     }
