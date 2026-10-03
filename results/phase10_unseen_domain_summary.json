@@ -1,0 +1,116 @@
+{
+  "dataset": {
+    "path": "dataset/raw/PhiUSIIL_Phishing_URL_Dataset.csv",
+    "valid_rows": 235360,
+    "label_column": "label",
+    "label_mapping": {
+      "0": "Phishing",
+      "1": "Legitimate"
+    },
+    "feature_count": 27,
+    "selected_feature_count": 27,
+    "selected_features": [
+      "url_length",
+      "hostname_length",
+      "path_length",
+      "query_length",
+      "fragment_length",
+      "dot_count",
+      "hyphen_count",
+      "underscore_count",
+      "digit_count",
+      "special_character_count",
+      "slash_count",
+      "query_parameter_count",
+      "url_depth",
+      "subdomain_count",
+      "uses_https",
+      "uses_ip_address",
+      "contains_at_symbol",
+      "encoded_character_count",
+      "suspicious_character_count",
+      "url_entropy",
+      "hostname_entropy",
+      "path_entropy",
+      "letter_count",
+      "numeric_count",
+      "digit_ratio",
+      "special_character_ratio",
+      "looks_like_shortener"
+    ],
+    "domain_groups": 167154
+  },
+  "methodology": {
+    "standard_split": "train_test_split(test_size=0.30, random_state=42, stratify=y)",
+    "domain_split": "GroupShuffleSplit(n_splits=1, test_size=0.30, random_state=42)",
+    "domain_overlap_verification": "train_domains & test_domains == empty set",
+    "train_domains": 117007,
+    "test_domains": 50147,
+    "domain_overlap": 0
+  },
+  "results": [
+    {
+      "model": "Random Forest",
+      "accuracy": 0.9957141853439191,
+      "precision": 0.994973525608179,
+      "recall": 0.9975780409041981,
+      "f1": 0.9962740810417914,
+      "specificity": 0.9931988510680445,
+      "roc_auc": 0.9974793669888964,
+      "fpr": 0.006801148931955495,
+      "fnr": 0.0024219590958019376,
+      "confusion_matrix": {
+        "tn": 30083,
+        "fp": 206,
+        "fn": 99,
+        "tp": 40777
+      },
+      "raw_label_mapping": {
+        "0": "Phishing",
+        "1": "Legitimate"
+      }
+    },
+    {
+      "model": "SVM",
+      "accuracy": 0.994351155764772,
+      "precision": 0.9911177983788768,
+      "recall": 0.9991192876015266,
+      "f1": 0.9951024585170927,
+      "specificity": 0.9879164052956518,
+      "roc_auc": 0.9954130713542977,
+      "fpr": 0.012083594704348112,
+      "fnr": 0.0008807123984734318,
+      "confusion_matrix": {
+        "tn": 29923,
+        "fp": 366,
+        "fn": 36,
+        "tp": 40840
+      },
+      "raw_label_mapping": {
+        "0": "Phishing",
+        "1": "Legitimate"
+      }
+    },
+    {
+      "model": "Hybrid RF + SVM Soft Voting",
+      "accuracy": 0.9963043630998384,
+      "precision": 0.9941355396033581,
+      "recall": 0.9994617868675996,
+      "f1": 0.9967915482304718,
+      "specificity": 0.9920433160553336,
+      "roc_auc": 0.9980195569515317,
+      "fpr": 0.00795668394466638,
+      "fnr": 0.0005382131324004305,
+      "confusion_matrix": {
+        "tn": 30048,
+        "fp": 241,
+        "fn": 22,
+        "tp": 40854
+      },
+      "raw_label_mapping": {
+        "0": "Phishing",
+        "1": "Legitimate"
+      }
+    }
+  ]
+}

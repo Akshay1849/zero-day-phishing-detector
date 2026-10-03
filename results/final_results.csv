@@ -1,0 +1,57 @@
+Track,Phase,Model,Evaluation,Metric,Value,Dataset_Notes
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),Test Set (70/30 stratified),Accuracy,0.9701537533916189,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),Test Set (70/30 stratified),Precision,0.9691780821917808,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),Test Set (70/30 stratified),Recall (Phishing),0.9632402995234853,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),Test Set (70/30 stratified),F1,0.9662000682826903,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),Test Set (70/30 stratified),Specificity,0.9756493506493507,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),Test Set (70/30 stratified),ROC-AUC,0.9958327071158929,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),5-Fold CV Mean,Accuracy,0.9641976051004779,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),5-Fold CV Std,Accuracy,0.0033187642852448357,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),5-Fold CV Mean,F1,0.9593511106081583,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),5-Fold CV Std,F1,0.0038127304228401603,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),5-Fold CV Mean,ROC-AUC,0.9945289053034353,phishing.csv / 11054 rows / 31 features
+Track A,Phase 1-7 Benchmark,Random Forest (20 features),5-Fold CV Std,ROC-AUC,0.0012226872180167011,phishing.csv / 11054 rows / 31 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),Accuracy,0.9954962610469069,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),Precision,0.9975485291174705,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),Recall (Phishing),0.99189135409412,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),F1,0.9947118982289848,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),Specificity,0.9981831664812755,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),ROC-AUC,0.9973418952293988,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),FPR,0.0018168335187245088,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Standard Split (80/20),FNR,0.008108645905880013,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Accuracy,0.995665254740509,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Precision,0.997411226647107,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Recall (Phishing),0.9931689293693075,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,F1,0.9952855574451597,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Specificity,0.9977978418850474,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,ROC-AUC,0.9975417221101003,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,FPR,0.002202158114952654,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,FNR,0.006831070630692559,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Train Domains,133723,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Test Domains,33431,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Unseen-Domain Split,Domain Overlap,0,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Mean,Accuracy,0.9949173624434093,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Std,Accuracy,0.00047855503607445476,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Mean,Precision,0.9975580393767844,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Std,Precision,0.0004909109382225141,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Mean,Recall (Phishing),0.9905233347151319,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Std,Recall (Phishing),0.0012252932348809046,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Mean,F1,0.9940277920618955,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Std,F1,0.0005654686221314285,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Mean,ROC-AUC,0.9970725748783427,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),5-Fold CV Std,ROC-AUC,0.00037281575809955804,PhiUSIIL_Phishing_URL_Dataset.csv / 235360 rows / 15 features
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 1,Accuracy,0.9944234956715704,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 1,F1,0.9934485555624883,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 1,ROC-AUC,0.9968172723270251,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 2,Accuracy,0.9945297148016358,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 2,F1,0.9935673245066200,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 2,ROC-AUC,0.9965556617694900,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 3,Accuracy,0.9954591321897074,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 3,F1,0.9946690775321881,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 3,ROC-AUC,0.9973396346159192,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 4,Accuracy,0.9953793451416735,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 4,F1,0.9945740301858551,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 4,ROC-AUC,0.9974362285945015,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 5,Accuracy,0.9947951244124599,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 5,F1,0.9938799725223256,PhiUSIIL_Phishing_URL_Dataset.csv
+Track B,Phase 8 URL-only,Random Forest (15 URL features),Fold 5,ROC-AUC,0.9972140770847768,PhiUSIIL_Phishing_URL_Dataset.csv

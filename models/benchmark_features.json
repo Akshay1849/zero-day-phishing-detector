@@ -1,0 +1,21 @@
+[
+  "HTTPS",
+  "AnchorURL",
+  "WebsiteTraffic",
+  "SubDomains",
+  "PrefixSuffix-",
+  "LinksInScriptTags",
+  "ServerFormHandler",
+  "RequestURL",
+  "LinksPointingToPage",
+  "DomainRegLen",
+  "AgeofDomain",
+  "GoogleIndex",
+  "DNSRecording",
+  "UsingIP",
+  "PageRank",
+  "LongURL",
+  "HTTPSDomainURL",
+  "InfoEmail",
+  "ShortURL"
+]

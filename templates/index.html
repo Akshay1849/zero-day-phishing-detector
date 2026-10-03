@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phishing URL Detection</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page">
+
+    <header class="header">
+      <p class="eyebrow">STATIC URL ANALYSIS · MACHINE LEARNING</p>
+      <h1>Phishing URL Detection</h1>
+      <p class="subtitle">
+        Enter any URL to analyze it with machine learning.
+        The application <strong>never opens, visits, or downloads</strong> the submitted address.
+      </p>
+    </header>
+
+    <form id="prediction-form" class="form-panel" novalidate>
+      <div class="model-select-row">
+        <label for="model-select" class="model-label">Model</label>
+        <div class="model-toggle">
+          <label class="model-option">
+            <input type="radio" name="model" id="model-rf" value="rf" checked>
+            <span>Random Forest</span>
+          </label>
+          <label class="model-option">
+            <input type="radio" name="model" id="model-hybrid" value="hybrid">
+            <span>Hybrid RF + SVM</span>
+          </label>
+        </div>
+      </div>
+
+      <label for="url-input">Enter URL to analyze</label>
+      <div class="input-row">
+        <input
+          id="url-input"
+          name="url"
+          type="url"
+          placeholder="https://example.com/login"
+          autocomplete="off"
+          required
+        >
+        <button id="analyze-button" type="submit">
+          <span id="button-label">Analyze URL</span>
+          <span id="button-loading" hidden>Analyzing…</span>
+        </button>
+      </div>
+      <p class="form-hint">Only absolute HTTP and HTTPS URLs are accepted.</p>
+    </form>
+
+    <!-- Result card — shown after a successful prediction -->
+    <section id="result-card" class="result-card" hidden aria-live="polite">
+      <div class="result-header">
+        <div id="result-badge" class="result-badge"></div>
+        <div>
+          <h2 id="result-title"></h2>
+          <p id="result-confidence"></p>
+          <p id="result-risk"></p>
+          <p id="result-model" class="result-model-label"></p>
+        </div>
+      </div>
+      <div class="indicators">
+        <h3>Detected indicators</h3>
+        <ul id="indicator-list"></ul>
+      </div>
+      <p class="disclaimer">
+        This is a research prototype. A model prediction is not a guaranteed security verdict.
+      </p>
+    </section>
+
+    <!-- Error card — shown on validation or server errors -->
+    <section id="error-card" class="error-card" hidden aria-live="polite"></section>
+
+    <button id="clear-button" class="clear-button" type="button" hidden>Clear result</button>
+
+    <footer>
+      Phishing URL Detection · College Mini-Project ·
+      Static analysis only — no network requests are made.
+    </footer>
+
+  </main>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

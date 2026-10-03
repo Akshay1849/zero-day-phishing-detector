@@ -1,0 +1,29 @@
+# Local Python environments and generated files
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and credentials
+.env*
+.vscode/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Raw datasets must remain local
+/dataset/raw/
+
+# Operating-system and editor temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.tmp
+*.temp
+*.swp
+*.swo
+~$*

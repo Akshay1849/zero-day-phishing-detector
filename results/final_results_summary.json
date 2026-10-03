@@ -1,0 +1,219 @@
+{
+  "project_title": "Zero-Day Phishing URL Detection Using Machine Learning-Based Feature Analysis",
+  "report_date": "2026-09-06",
+  "academic_note": "All metrics are reported exactly as produced by the experiments. No metrics have been rounded, invented, or altered.",
+  "label_mapping": {
+    "0": "Phishing",
+    "1": "Legitimate"
+  },
+  "tracks": {
+    "track_a": {
+      "description": "Phase 1-7 Benchmark \u2014 standard phishing classification using the UCI/Phishing Websites dataset with 31 hand-crafted features.",
+      "dataset": {
+        "source_file": "dataset/raw/phishing.csv",
+        "total_rows": 11054,
+        "feature_count": 31,
+        "label_column": "class",
+        "label_mapping": {
+          "-1": "Phishing",
+          "1": "Legitimate"
+        },
+        "duplicate_rows_removed": 0,
+        "missing_values": 0,
+        "train_rows": 7737,
+        "test_rows": 3317,
+        "split": "70/30 stratified random split, random_state=42"
+      },
+      "final_model": {
+        "name": "Random Forest",
+        "feature_count_final": 20,
+        "feature_selection_method": "Random Forest Top-K (smallest set within 0.01 of full-feature baseline)"
+      },
+      "test_set_performance": {
+        "Accuracy": 0.9701537533916189,
+        "Precision": 0.9691780821917808,
+        "Recall_Phishing": 0.9632402995234853,
+        "F1": 0.9662000682826903,
+        "Specificity": 0.9756493506493507,
+        "ROC_AUC": 0.9958327071158929,
+        "FPR": 0.024350649350649352,
+        "FNR": 0.03675970047651463
+      },
+      "cross_validation": {
+        "folds": 5,
+        "Accuracy_mean": 0.9641976051004779,
+        "Accuracy_std": 0.0033187642852448357,
+        "Precision_mean": 0.9652514762568,
+        "Precision_std": 0.008249706678514119,
+        "Recall_mean": 0.9536221829712073,
+        "Recall_std": 0.009043322211958128,
+        "F1_mean": 0.9593511106081583,
+        "F1_std": 0.0038127304228401603,
+        "ROC_AUC_mean": 0.9945289053034353,
+        "ROC_AUC_std": 0.0012226872180167011
+      },
+      "limitation": "This dataset does not contain URL or domain identifiers; unseen-domain evaluation is not supported.",
+      "unseen_domain_evaluation": false
+    },
+    "track_b": {
+      "description": "Phase 8 URL-only model \u2014 deterministic feature extraction from raw URL strings.",
+      "dataset": {
+        "source_file": "dataset/raw/PhiUSIIL_Phishing_URL_Dataset.csv",
+        "original_rows": 235795,
+        "valid_engineered_rows": 235360,
+        "invalid_rows_removed": 10,
+        "duplicate_urls_removed": 425,
+        "unique_domains_after_engineering": 167154,
+        "class_distribution": {
+          "0_Phishing": 100510,
+          "1_Legitimate": 134850
+        },
+        "label_mapping": {
+          "0": "Phishing",
+          "1": "Legitimate"
+        }
+      },
+      "feature_engineering": {
+        "total_url_only_features_engineered": 27,
+        "selected_features_count": 15,
+        "selection_criterion": "Highest unseen-domain F1, then ROC-AUC, then fewer features",
+        "selected_features": [
+          "uses_https",
+          "path_length",
+          "slash_count",
+          "numeric_count",
+          "digit_ratio",
+          "special_character_count",
+          "digit_count",
+          "url_length",
+          "hostname_length",
+          "url_depth",
+          "subdomain_count",
+          "hostname_entropy",
+          "url_entropy",
+          "dot_count",
+          "path_entropy"
+        ]
+      },
+      "final_model": {
+        "name": "Random Forest",
+        "n_estimators": 100,
+        "random_state": 42,
+        "model_file": "models/url_final_model.pkl"
+      },
+      "standard_split": {
+        "test_rows": 47072,
+        "Accuracy": 0.9954962610469069,
+        "Precision": 0.9975485291174705,
+        "Recall_Phishing": 0.99189135409412,
+        "F1": 0.9947118982289848,
+        "Specificity": 0.9981831664812755,
+        "ROC_AUC": 0.9973418952293988,
+        "FPR": 0.0018168335187245088,
+        "FNR": 0.008108645905880013,
+        "confusion_matrix": {
+          "TN": 26914,
+          "FP": 56,
+          "FN": 161,
+          "TP": 19941
+        }
+      },
+      "unseen_domain_split": {
+        "test_rows": 50522,
+        "train_domains": 133723,
+        "test_domains": 33431,
+        "domain_overlap": 0,
+        "Accuracy": 0.995665254740509,
+        "Precision": 0.997411226647107,
+        "Recall_Phishing": 0.9931689293693075,
+        "F1": 0.9952855574451597,
+        "Specificity": 0.9977978418850474,
+        "ROC_AUC": 0.9975417221101003,
+        "FPR": 0.002202158114952654,
+        "FNR": 0.006831070630692559,
+        "confusion_matrix": {
+          "TN": 27174,
+          "FP": 72,
+          "FN": 157,
+          "TP": 23119
+        }
+      },
+      "five_fold_cross_validation": {
+        "folds": 5,
+        "type": "Stratified K-Fold",
+        "Accuracy_mean": 0.9949173624434093,
+        "Accuracy_std": 0.00047855503607445476,
+        "Precision_mean": 0.9975580393767844,
+        "Precision_std": 0.0004909109382225141,
+        "Recall_mean": 0.9905233347151319,
+        "Recall_std": 0.0012252932348809046,
+        "F1_mean": 0.9940277920618955,
+        "F1_std": 0.0005654686221314285,
+        "ROC_AUC_mean": 0.9970725748783427,
+        "ROC_AUC_std": 0.00037281575809955804,
+        "fold_results": [
+          {
+            "fold": 1,
+            "Accuracy": 0.9944234956715704,
+            "Precision": 0.9968695216629101,
+            "Recall": 0.9900509886829997,
+            "F1": 0.9934485555624883,
+            "ROC_AUC": 0.9968172723270251
+          },
+          {
+            "fold": 2,
+            "Accuracy": 0.9945297148016358,
+            "Precision": 0.9979299962363568,
+            "Recall": 0.9892426315134933,
+            "F1": 0.99356732450662,
+            "ROC_AUC": 0.99655566176949
+          },
+          {
+            "fold": 3,
+            "Accuracy": 0.9954591321897074,
+            "Precision": 0.9973741794310722,
+            "Recall": 0.9919786096256684,
+            "F1": 0.9946690775321881,
+            "ROC_AUC": 0.9973396346159192
+          },
+          {
+            "fold": 4,
+            "Accuracy": 0.9953793451416735,
+            "Precision": 0.9974979670982673,
+            "Recall": 0.9916671848765624,
+            "F1": 0.9945740301858551,
+            "ROC_AUC": 0.9974362285945015
+          },
+          {
+            "fold": 5,
+            "Accuracy": 0.9947951244124599,
+            "Precision": 0.9981185324553151,
+            "Recall": 0.9896772588769355,
+            "F1": 0.9938799725223256,
+            "ROC_AUC": 0.9972140770847768
+          }
+        ]
+      },
+      "top_feature_importances": {
+        "uses_https": 0.4181827478203514,
+        "path_length": 0.15141475584396244,
+        "slash_count": 0.12060326642080205,
+        "numeric_count": 0.06533536629650792,
+        "digit_ratio": 0.05071768346528672,
+        "special_character_count": 0.04747130803906389,
+        "digit_count": 0.029023359512820156,
+        "url_length": 0.024058363739731047,
+        "hostname_length": 0.013353377240398263,
+        "url_depth": 0.013337515190089744,
+        "subdomain_count": 0.010976392492745131,
+        "hostname_entropy": 0.009865036592015083,
+        "url_entropy": 0.008731687460997329,
+        "dot_count": 0.008442182092693836,
+        "path_entropy": 0.00829005258633453
+      }
+    }
+  },
+  "no_experiment_rerun": true,
+  "models_not_modified": true,
+  "datasets_not_modified": true
+}

@@ -1,0 +1,69 @@
+{
+  "dataset_path": "dataset/raw/PhiUSIIL_Phishing_URL_Dataset.csv",
+  "dataset_size": 235795,
+  "label_column": "label",
+  "label_mapping": {
+    "0": "Phishing",
+    "1": "Legitimate"
+  },
+  "number_of_url_features": 27,
+  "selected_feature_count": 27,
+  "selected_feature_names": [
+    "url_length",
+    "hostname_length",
+    "path_length",
+    "query_length",
+    "fragment_length",
+    "dot_count",
+    "hyphen_count",
+    "underscore_count",
+    "digit_count",
+    "special_character_count",
+    "slash_count",
+    "query_parameter_count",
+    "url_depth",
+    "subdomain_count",
+    "uses_https",
+    "uses_ip_address",
+    "contains_at_symbol",
+    "encoded_character_count",
+    "suspicious_character_count",
+    "url_entropy",
+    "hostname_entropy",
+    "path_entropy",
+    "letter_count",
+    "numeric_count",
+    "digit_ratio",
+    "special_character_ratio",
+    "looks_like_shortener"
+  ],
+  "existing_rf_model_path": "models/url_model.pkl",
+  "existing_rf_metrics": {
+    "invalid_rows_removed": 10,
+    "duplicate_urls_removed": 425,
+    "valid_rows": 235360,
+    "unique_domains": 167154,
+    "train_rows": 164195,
+    "test_rows": 71165,
+    "feature_count": 27,
+    "domain_aware_split": true,
+    "random_state": 42,
+    "test_size": 0.3,
+    "accuracy": 0.9957141853439191,
+    "precision": 0.996752816434725,
+    "recall": 0.993165835781967,
+    "f1": 0.9949560932047826,
+    "roc_auc": 0.9974793556811854,
+    "confusion_matrix": {
+      "tn": 40778,
+      "fp": 98,
+      "fn": 207,
+      "tp": 30082
+    },
+    "label_mapping": {
+      "0": "Legitimate",
+      "1": "Phishing"
+    }
+  },
+  "current_api_model_path": "models/url_model.pkl"
+}
