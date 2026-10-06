@@ -19,19 +19,7 @@
     </header>
 
     <form id="prediction-form" class="form-panel" novalidate>
-      <div class="model-select-row">
-        <label for="model-select" class="model-label">Model</label>
-        <div class="model-toggle">
-          <label class="model-option">
-            <input type="radio" name="model" id="model-rf" value="rf" checked>
-            <span>Random Forest</span>
-          </label>
-          <label class="model-option">
-            <input type="radio" name="model" id="model-hybrid" value="hybrid">
-            <span>Hybrid RF + SVM</span>
-          </label>
-        </div>
-      </div>
+      <p class="model-name">Model: Hybrid RF + SVM</p>
 
       <label for="url-input">Enter URL to analyze</label>
       <div class="input-row">
@@ -58,6 +46,7 @@
         <div>
           <h2 id="result-title"></h2>
           <p id="result-confidence"></p>
+          <p id="result-probabilities"></p>
           <p id="result-risk"></p>
           <p id="result-model" class="result-model-label"></p>
         </div>

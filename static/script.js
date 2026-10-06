@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorCard = document.getElementById('error-card');
   const resultTitle = document.getElementById('result-title');
   const resultConfidence = document.getElementById('result-confidence');
+  const resultProbabilities = document.getElementById('result-probabilities');
   const resultRisk = document.getElementById('result-risk');
   const resultModelLabel = document.getElementById('result-model');
   const indicatorList = document.getElementById('indicator-list');
@@ -37,16 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resultConfidence.textContent = `Confidence: ${(payload.confidence * 100).toFixed(2)}%`;
 
-    // Show phishing / legitimate probabilities for hybrid, risk level for RF
-    if (payload.phishing_probability !== undefined) {
-      resultRisk.textContent =
-        `Phishing prob: ${(payload.phishing_probability * 100).toFixed(1)}% · ` +
-        `Legitimate prob: ${(payload.legitimate_probability * 100).toFixed(1)}%`;
-    } else if (payload.risk_level) {
-      resultRisk.textContent = `Risk level: ${payload.risk_level}`;
-    } else {
-      resultRisk.textContent = '';
-    }
+    resultProbabilities.textContent =
+      `Phishing Probability: ${(payload.phishing_probability * 100).toFixed(1)}% · ` +
+      `Legitimate Probability: ${(payload.legitimate_probability * 100).toFixed(1)}%`;
+    resultRisk.textContent = `Risk Level: ${payload.risk_level}`;
 
     resultModelLabel.textContent = `Model: ${payload.model}`;
 
@@ -72,12 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Determine which model/endpoint to use
-    const modelValue = document.querySelector('input[name="model"]:checked')?.value || 'rf';
-    const selection = modelValue === 'hybrid'
-      ? {endpoint: '/api/predict-url-hybrid', model: 'Hybrid RF + SVM'}
-      : {endpoint: '/api/predict-url', model: 'Random Forest'};
-
     setLoading(true);
     clearButton.hidden = true;
     resultCard.hidden = true;
@@ -86,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       let response;
       try {
-        response = await fetch(selection.endpoint, {
+        response = await fetch('/api/predict-url', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({url})
@@ -129,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
         );
       } else if (!response.ok || !payload.success) {
         showError(payload.error || 'The request was rejected.');
-      } else if (payload.model !== selection.model) {
-        showError('The selected model response did not match the requested model.');
+      } else if (payload.model !== 'Hybrid RF + SVM') {
+        showError('The prediction server returned an unexpected model.');
       } else {
         showResult(payload);
       }

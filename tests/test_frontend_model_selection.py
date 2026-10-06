@@ -8,19 +8,9 @@ SCRIPT_PATH = ROOT / "static" / "script.js"
 
 class FrontendModelSelectionTests(unittest.TestCase):
     def setUp(self):
-        self.selected_model = "rf"
+        self.selected_model = "hybrid"
         self.responses = {
             "/api/predict-url": {
-                "success": True,
-                "model": "Random Forest",
-                "prediction": 1,
-                "label": "Legitimate",
-                "confidence": 0.91,
-                "phishing_probability": 0.09,
-                "legitimate_probability": 0.91,
-                "risk_level": "Low",
-            },
-            "/api/predict-url-hybrid": {
                 "success": True,
                 "model": "Hybrid RF + SVM",
                 "prediction": 0,
@@ -28,6 +18,7 @@ class FrontendModelSelectionTests(unittest.TestCase):
                 "confidence": 0.82,
                 "phishing_probability": 0.82,
                 "legitimate_probability": 0.18,
+                "risk_level": "High",
             },
         }
 
@@ -45,13 +36,12 @@ class Element {
   appendChild(child) { this.children.push(child); }
   focus() {}
 }
-const ids = ['prediction-form','url-input','analyze-button','button-label','button-loading','result-card','error-card','result-title','result-confidence','result-risk','result-model','indicator-list','clear-button','result-badge'];
+const ids = ['prediction-form','url-input','analyze-button','button-label','button-loading','result-card','error-card','result-title','result-confidence','result-probabilities','result-risk','result-model','indicator-list','clear-button','result-badge'];
 const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
 elements['url-input'].value = 'https://example.invalid/login';
 const document = {
   addEventListener: (_name, callback) => callback(),
   getElementById: id => elements[id],
-  querySelector: () => ({value: selectedModel}),
   createElement: () => new Element(),
 };
 const calls = [];
@@ -71,7 +61,7 @@ vm.runInNewContext(frontendScript, {document, fetch, JSON, Error});
     selectedModel = model;
     await elements['prediction-form'].listeners.submit({preventDefault(){}});
   }
-  process.stdout.write(JSON.stringify({calls, title:elements['result-title'].textContent, confidence:elements['result-confidence'].textContent, risk:elements['result-risk'].textContent, model:elements['result-model'].textContent, error:elements['error-card'].textContent, resultHidden:elements['result-card'].hidden}));
+  process.stdout.write(JSON.stringify({calls, title:elements['result-title'].textContent, confidence:elements['result-confidence'].textContent, probabilities:elements['result-probabilities'].textContent, risk:elements['result-risk'].textContent, model:elements['result-model'].textContent, error:elements['error-card'].textContent, resultHidden:elements['result-card'].hidden}));
 })();
 """
         response_configs = responses or {
@@ -99,32 +89,27 @@ vm.runInNewContext(frontendScript, {document, fetch, JSON, Error});
         )
         return json.loads(result.stdout)
 
-    def test_rf_selection_calls_only_rf_endpoint_and_displays_rf_identity(self):
+    def test_url_submission_calls_hybrid_endpoint_and_displays_only_hybrid_result(self):
         result = self._run_frontend()
         self.assertEqual(result["calls"], ["/api/predict-url"])
-        self.assertEqual(result["title"], "LEGITIMATE URL")
-        self.assertEqual(result["model"], "Model: Random Forest")
-        self.assertEqual(result["confidence"], "Confidence: 91.00%")
-        self.assertIn("Phishing prob: 9.0%", result["risk"])
-        self.assertIn("Legitimate prob: 91.0%", result["risk"])
-
-    def test_hybrid_selection_calls_only_phase10_endpoint_and_displays_hybrid_fields(self):
-        self.selected_model = "hybrid"
-        result = self._run_frontend()
-        self.assertEqual(result["calls"], ["/api/predict-url-hybrid"])
         self.assertEqual(result["title"], "PHISHING URL")
         self.assertEqual(result["model"], "Model: Hybrid RF + SVM")
         self.assertEqual(result["confidence"], "Confidence: 82.00%")
-        self.assertIn("Phishing prob: 82.0%", result["risk"])
-        self.assertIn("Legitimate prob: 18.0%", result["risk"])
+        self.assertIn("Phishing Probability: 82.0%", result["probabilities"])
+        self.assertIn("Legitimate Probability: 18.0%", result["probabilities"])
+        self.assertEqual(result["risk"], "Risk Level: High")
 
-    def test_hybrid_result_replaces_prior_rf_result(self):
-        result_hybrid = self._run_frontend(["rf", "hybrid"])
-        self.assertEqual(result_hybrid["calls"], ["/api/predict-url", "/api/predict-url-hybrid"])
-        self.assertEqual(result_hybrid["model"], "Model: Hybrid RF + SVM")
-        self.assertEqual(result_hybrid["title"], "PHISHING URL")
-        self.assertEqual(result_hybrid["confidence"], "Confidence: 82.00%")
-        self.assertIn("Phishing prob: 82.0%", result_hybrid["risk"])
+    def test_legacy_model_choice_cannot_select_random_forest(self):
+        result = self._run_frontend(["rf", "hybrid"])
+        self.assertEqual(result["calls"], ["/api/predict-url", "/api/predict-url"])
+        self.assertEqual(result["model"], "Model: Hybrid RF + SVM")
+        self.assertNotIn("Random Forest", SCRIPT_PATH.read_text(encoding="utf-8"))
+
+    def test_homepage_displays_only_fixed_hybrid_model(self):
+        html = (ROOT / "templates" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Model: Hybrid RF + SVM", html)
+        self.assertNotIn("Random Forest", html)
+        self.assertNotIn('name="model"', html)
 
     def test_http_json_error_is_displayed_to_user(self):
         result = self._run_frontend(responses={

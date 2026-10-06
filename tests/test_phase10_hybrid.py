@@ -4,6 +4,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import app as app_module
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import LinearSVC
 from src.url_feature_extraction import URL_ONLY_FEATURE_ORDER, extract_url_only_row
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,6 +42,13 @@ class Phase10HybridModelTests(unittest.TestCase):
         model = app_module.load_phase10_hybrid_model()
         self.assertTrue(hasattr(model, "predict"))
         self.assertTrue(hasattr(model, "predict_proba"))
+        self.assertIsInstance(model.rf_model, RandomForestClassifier)
+        self.assertEqual(model.rf_model.n_estimators, 300)
+        self.assertEqual(model.rf_model.random_state, 42)
+        self.assertIsInstance(model.svm_pipeline, CalibratedClassifierCV)
+        self.assertIsInstance(model.svm_pipeline.estimator.named_steps["scaler"], StandardScaler)
+        self.assertIsInstance(model.svm_pipeline.estimator.named_steps["svc"], LinearSVC)
+        self.assertEqual(model.svm_pipeline.estimator.named_steps["svc"].C, 1.0)
 
     def test_06_valid_url_produces_prediction(self):
         response = app_module.app.test_client().post("/api/predict-url-hybrid", json={"url": "https://example.com/login"})
@@ -57,20 +68,10 @@ class Phase10HybridModelTests(unittest.TestCase):
         self.assertGreaterEqual(conf, 0.0)
         self.assertLessEqual(conf, 1.0)
 
-    def test_09_rf_probability_is_valid(self):
+    def test_09_hybrid_probability_is_valid(self):
         response = app_module.app.test_client().post("/api/predict-url-hybrid", json={"url": "https://example.com/login"})
-        self.assertGreaterEqual(response.get_json()["rf_probability"], 0.0)
-        self.assertLessEqual(response.get_json()["rf_probability"], 1.0)
-
-    def test_10_svm_probability_is_valid(self):
-        response = app_module.app.test_client().post("/api/predict-url-hybrid", json={"url": "https://example.com/login"})
-        self.assertGreaterEqual(response.get_json()["svm_probability"], 0.0)
-        self.assertLessEqual(response.get_json()["svm_probability"], 1.0)
-
-    def test_11_hybrid_probability_is_valid(self):
-        response = app_module.app.test_client().post("/api/predict-url-hybrid", json={"url": "https://example.com/login"})
-        self.assertGreaterEqual(response.get_json()["hybrid_probability"], 0.0)
-        self.assertLessEqual(response.get_json()["hybrid_probability"], 1.0)
+        self.assertGreaterEqual(response.get_json()["phishing_probability"], 0.0)
+        self.assertLessEqual(response.get_json()["phishing_probability"], 1.0)
 
     def test_phase10_api_preserves_raw_label_mapping_for_synthetic_urls(self):
         urls = [
@@ -88,18 +89,23 @@ class Phase10HybridModelTests(unittest.TestCase):
                 feature_row = extract_url_only_row(url)
                 ordered_values = [feature_row[name] for name in app_module.phase10_feature_order]
                 expected_prediction, _, rf_probability, svm_probability, hybrid_probability = model.predict_with_details(ordered_values)
-                response = client.post("/api/predict-url-hybrid", json={"url": url})
-                payload = response.get_json()
+                self.assertAlmostEqual(hybrid_probability, 0.5 * rf_probability + 0.5 * svm_probability)
+                for endpoint in ("/api/predict-url", "/api/predict-url-hybrid"):
+                    with self.subTest(endpoint=endpoint):
+                        response = client.post(endpoint, json={"url": url})
+                        payload = response.get_json()
 
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(payload["prediction"], expected_prediction)
-                self.assertEqual(payload["prediction"], 0 if hybrid_probability >= 0.5 else 1)
-                self.assertEqual(payload["label"], "Phishing" if expected_prediction == 0 else "Legitimate")
-                self.assertAlmostEqual(payload["confidence"], max(hybrid_probability, 1.0 - hybrid_probability))
-                self.assertAlmostEqual(payload["rf_probability"], rf_probability)
-                self.assertAlmostEqual(payload["svm_probability"], svm_probability)
-                self.assertAlmostEqual(payload["phishing_probability"], hybrid_probability)
-                self.assertAlmostEqual(payload["legitimate_probability"], 1.0 - hybrid_probability)
+                        self.assertEqual(response.status_code, 200)
+                        self.assertEqual(payload["model"], "Hybrid RF + SVM")
+                        self.assertEqual(payload["prediction"], expected_prediction)
+                        self.assertEqual(payload["prediction"], 0 if hybrid_probability >= 0.5 else 1)
+                        self.assertEqual(payload["label"], "Phishing" if expected_prediction == 0 else "Legitimate")
+                        self.assertAlmostEqual(payload["confidence"], max(hybrid_probability, 1.0 - hybrid_probability))
+                        self.assertAlmostEqual(payload["phishing_probability"], hybrid_probability)
+                        self.assertAlmostEqual(payload["legitimate_probability"], 1.0 - hybrid_probability)
+                        self.assertNotIn("rf_probability", payload)
+                        self.assertNotIn("svm_probability", payload)
+                        self.assertNotIn("hybrid_probability", payload)
 
     def test_phase10_api_returns_both_raw_classes(self):
         client = app_module.app.test_client()
@@ -140,7 +146,7 @@ class Phase10HybridModelTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
         self.assertTrue(payload["success"])
-        self.assertEqual(payload["model"], "Random Forest")
+        self.assertEqual(payload["model"], "Hybrid RF + SVM")
 
     def test_17_existing_predict_still_works(self):
         response = app_module.app.test_client().post("/api/predict", json={"features": {"HTTPS": 1, "UsingIP": -1, "LongURL": 1, "ShortURL": 1, "Symbol@": 1, "Redirecting//": 1, "PrefixSuffix-": -1, "SubDomains": 0, "DomainRegLen": -1, "Favicon": 1, "NonStdPort": 1, "HTTPSDomainURL": -1, "RequestURL": 1, "AnchorURL": 0, "LinksInScriptTags": -1, "ServerFormHandler": -1, "InfoEmail": 1, "AbnormalURL": 1, "WebsiteForwarding": 0, "StatusBarCust": 1, "DisableRightClick": 1, "UsingPopupWindow": 1, "IframeRedirection": 1, "AgeofDomain": -1, "DNSRecording": -1, "WebsiteTraffic": 0, "PageRank": -1, "GoogleIndex": 1, "LinksPointingToPage": 1, "StatsReport": 1, "Index": 0}})

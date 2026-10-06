@@ -3,8 +3,10 @@
 Entry point: python app.py   OR   python -m flask --app app run
 
 Models loaded at startup:
-  - url_model: Random Forest trained on raw URLs (27 features). Used by /api/predict-url.
-  - hybrid_model: RF+SVM Soft-Voting ensemble (27 features). Used by /api/predict-hybrid.
+  - phase10_hybrid_wrapper: RF + calibrated Linear SVM soft-voting model (27 features).
+    Used by the user-facing /api/predict-url route.
+  - url_model: separate Random Forest retained for research compatibility.
+  - hybrid_model: legacy RF+SVM endpoint model used by /api/predict-hybrid.
   - benchmark_model: Random Forest on pre-encoded dataset (19 features). Research API only.
 
 No model visits, downloads, or executes the submitted URL.
@@ -256,60 +258,6 @@ def health():
     })
 
 
-@app.post("/api/predict-url")
-def predict_url():
-    """Classify a URL using the raw-URL model. No network request is made.
-
-    Request body:
-        {"url": "https://example.com/login"}
-
-    Response:
-        {
-            "success": true,
-            "url": "https://example.com/login",
-            "prediction": 0,
-            "label": "Phishing",
-            "confidence": 0.97,
-            "risk_level": "Low",
-            "indicators": [...]
-        }
-
-    API label mapping: 0 = Phishing, 1 = Legitimate. The saved RF model's
-    internal labels are converted from 0=Legitimate, 1=Phishing.
-    """
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict) or not isinstance(payload.get("url"), str):
-        return jsonify({"success": False, "error": "Request body must be JSON with a 'url' string."}), 400
-
-    try:
-        url_feature_dict = extract_url_features(payload["url"])
-        model_input = extract_url_only_row(payload["url"])
-    except InvalidURL as error:
-        return jsonify({"success": False, "error": str(error)}), 400
-
-    ordered_values = [model_input[name] for name in url_features]
-    internal_prediction, confidence = _run_model(url_model, ordered_values, url_features)
-    classes = list(url_model.classes_)
-    probabilities = url_model.predict_proba(pd.DataFrame([ordered_values], columns=url_features))[0]
-    phishing_prob = float(probabilities[classes.index(1)])
-    legitimate_prob = float(probabilities[classes.index(0)])
-    # The saved RF uses 1=phishing internally; API labels follow the raw dataset.
-    prediction = 0 if internal_prediction == 1 else 1
-
-    return jsonify({
-        "success": True,
-        "model": "Random Forest",
-        "url": url_feature_dict["url"],
-        "prediction": prediction,
-        "label": "Phishing" if prediction == 0 else "Legitimate",
-        "confidence": confidence,
-        "phishing_probability": phishing_prob,
-        "legitimate_probability": legitimate_prob,
-        "risk_level": _risk_level(phishing_prob),
-        "indicators": _url_indicators(url_feature_dict),
-    })
-
-
 @app.post("/api/predict")
 def predict_benchmark():
     """Classify using the benchmark model (research/demo use only).
@@ -400,9 +348,15 @@ def predict_hybrid():
     })
 
 
+@app.post("/api/predict-url")
 @app.post("/api/predict-url-hybrid")
 def predict_url_hybrid():
-    """Classify a raw URL, preserving Phase 10 labels: 0=phishing, 1=legitimate."""
+    """Classify a URL using the hybrid model, with no external URL access.
+
+    The submitted URL is validated and converted to the existing 27 ordered
+    URL-string features before the RF and calibrated SVM probabilities are
+    combined by equal-weight soft voting.
+    """
     payload = request.get_json(silent=True)
     if not isinstance(payload, dict) or not isinstance(payload.get("url"), str):
         return jsonify({"success": False, "error": "Request body must be JSON with a 'url' string."}), 400
@@ -422,7 +376,7 @@ def predict_url_hybrid():
     if phase10_hybrid_wrapper is None:
         return jsonify({"success": False, "error": "Phase 10 hybrid model is unavailable."}), 503
 
-    prediction, confidence, rf_phishing_probability, svm_phishing_probability, hybrid_probability = (
+    prediction, confidence, _, _, hybrid_probability = (
         phase10_hybrid_wrapper.predict_with_details(frame)
     )
     legitimate_probability = 1.0 - hybrid_probability
@@ -434,9 +388,6 @@ def predict_url_hybrid():
         "prediction": int(prediction),
         "label": "Phishing" if prediction == 0 else "Legitimate",
         "confidence": confidence,
-        "rf_probability": rf_phishing_probability,
-        "svm_probability": svm_phishing_probability,
-        "hybrid_probability": hybrid_probability,
         "phishing_probability": hybrid_probability,
         "legitimate_probability": legitimate_probability,
         "risk_level": _risk_level(hybrid_probability),

@@ -11,17 +11,23 @@ class URLApiTests(unittest.TestCase):
     def setUpClass(cls):
         cls.client = app.test_client()
 
-    def test_valid_url_returns_static_analysis_without_prediction(self):
+    def test_valid_url_returns_hybrid_prediction_without_component_outputs(self):
         response = self.client.post('/api/predict-url', json={'url': 'https://example.com/login'})
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
         self.assertTrue(payload['success'])
-        self.assertEqual(payload['model'], 'Random Forest')
+        self.assertEqual(payload['model'], 'Hybrid RF + SVM')
         self.assertIn(payload['prediction'], {0, 1})
         self.assertIn(payload['label'], {'Phishing', 'Legitimate'})
         self.assertIsInstance(payload['confidence'], float)
         self.assertAlmostEqual(payload['phishing_probability'] + payload['legitimate_probability'], 1.0)
         self.assertEqual(payload['prediction'], 0 if payload['label'] == 'Phishing' else 1)
+        self.assertEqual(
+            payload['prediction'],
+            0 if payload['phishing_probability'] >= 0.5 else 1,
+        )
+        self.assertNotIn('rf_probability', payload)
+        self.assertNotIn('svm_probability', payload)
 
     def test_https_http_ip_and_query_urls_are_accepted_for_analysis(self):
         for url in ('https://example.com', 'http://192.0.2.10/login', 'https://a.example.com/?x=1'):
@@ -62,7 +68,11 @@ class URLApiTests(unittest.TestCase):
         self.assertFalse(response.get_json()['success'])
 
     def test_unexpected_prediction_error_returns_safe_json_and_is_logged(self):
-        with patch.object(_app_module, '_run_model', side_effect=RuntimeError('model inference exploded')):
+        with patch.object(
+            _app_module.phase10_hybrid_wrapper,
+            'predict_with_details',
+            side_effect=RuntimeError('model inference exploded'),
+        ):
             with self.assertLogs(app.logger.name, level='ERROR') as captured:
                 response = self.client.post('/api/predict-url', json={'url': 'https://example.com/login'})
 

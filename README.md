@@ -82,10 +82,11 @@ These are results from this project dataset and test procedure, not copied from 
 
 ## Web Application
 
-The Flask application has two deliberately separate paths:
+The Flask application keeps its benchmark/research APIs separate from the URL-only web flow:
 
 1. `POST /api/predict` remains the benchmark inference endpoint. It accepts the complete 31-feature encoded representation, selects the exact 20 final features, and runs the saved Random Forest.
-2. `POST /api/predict-url` uses the independently trained raw-URL model described below.
+2. `POST /api/predict-hybrid` remains a legacy research endpoint.
+3. `POST /api/predict-url` is the user-facing raw-URL endpoint and uses the Hybrid RF + SVM model described below. `/api/predict-url-hybrid` is a compatibility alias for the same handler.
 
 The homepage accepts a URL and displays deterministic measurements such as URL length, HTTPS usage, IP-host detection, subdomain count, query count, and encoded-character count. It never opens the URL, performs DNS or HTTP requests, follows redirects, downloads content, or executes JavaScript.
 
@@ -95,7 +96,7 @@ The URL analyzer is not connected to the benchmark model. The benchmark's encode
 
 This independent experiment uses `dataset/raw/PhiUSIIL_Phishing_URL_Dataset.csv` from UCI. It retained 235,360 valid URL rows and 167,154 derived registrable-domain groups. It uses 27 deterministic URL-string features and excludes page-content, HTML, DNS, reputation, traffic, and probability-like UCI fields. Labels are `0 = Phishing` and `1 = Legitimate`.
 
-The selected model is a Random Forest with 15 URL-only features. Domain groups are used only for evaluation splits, never as model inputs.
+The selected model in this research experiment is a Random Forest with 15 URL-only features. Domain groups are used only for evaluation splits, never as model inputs.
 
 | Evaluation | Accuracy | F1 | Phishing Recall | ROC-AUC |
 | --- | ---: | ---: | ---: | ---: |
@@ -110,7 +111,7 @@ Standard 5-fold cross-validation:
 - F1: 99.40% +/- 0.06%
 - ROC-AUC: 99.71% +/- 0.04%
 
-The 15-feature metrics above describe the selected-feature research experiment; that experiment's model artifact is not included. The Flask application instead loads the 27-feature model at `models/url_model.pkl`, with feature order in `models/url_features.json`. Its separate metrics are recorded in `results/url_model_metrics.json`.
+The 15-feature metrics above describe the selected-feature research experiment; that experiment's model artifact is not included. The Flask web application uses the 27-feature Hybrid RF + SVM model. It loads the Random Forest component from `models/phase10_random_forest.pkl` and the calibrated Linear SVM pipeline from `models/phase10_svm_pipeline.pkl`, using the preserved feature order in `models/phase10_feature_order.json`. Their phishing probabilities are combined with equal 0.5 / 0.5 soft-voting weights. The separate `models/url_model.pkl` artifact remains available for research, but is not used for web predictions.
 
 ## Run Locally
 
@@ -123,7 +124,9 @@ python -m flask --app app run
 
 Open `http://127.0.0.1:5000/`.
 
-The dashboard's URL path maps `0` to Phishing and `1` to Legitimate using the independent URL model.
+The dashboard uses only Hybrid RF + SVM. Labels are `0 = Phishing` and `1 = Legitimate`; the final class is derived from the hybrid phishing probability (threshold 0.5). Prediction uses only static string features and never opens or fetches the URL.
+
+The normal web prediction endpoint is `POST /api/predict-url`. It returns the Hybrid RF + SVM prediction, phishing and legitimate probabilities, confidence, risk level, and URL indicators; individual RF and SVM outputs are kept internal.
 
 ## API Usage
 
@@ -192,7 +195,7 @@ Request:
 }
 ```
 
-Valid URLs return a prediction and confidence from the independent URL model. Invalid URLs return HTTP 400. This endpoint never visits the submitted URL.
+Valid URLs return the final Hybrid RF + SVM prediction, phishing/legitimate probabilities, confidence, risk level, and static URL indicators. Invalid URLs return HTTP 400. The endpoint never visits the submitted URL or exposes component probabilities.
 
 ## Testing
 

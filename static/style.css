@@ -180,7 +180,7 @@ h2 {
 h2.phishing  { color: var(--danger); }
 h2.legitimate { color: var(--safe); }
 
-#result-confidence, #result-risk {
+#result-confidence, #result-probabilities, #result-risk {
   margin: 2px 0 0;
   color: var(--muted);
   font-size: 0.9rem;
@@ -260,75 +260,13 @@ footer {
   button { width: 100%; }
   #indicator-list { grid-template-columns: 1fr; }
   .result-header { flex-direction: column; align-items: flex-start; }
-  .model-toggle { flex-direction: column; gap: 4px; }
 }
 
-/* ---------- Model selector ---------- */
-.model-select-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-
-.model-label {
+.model-name {
+  margin: 0 0 18px;
+  color: var(--accent);
   font-weight: 600;
-  font-size: 0.95rem;
-  margin: 0;
-  white-space: nowrap;
-}
-
-.model-toggle {
-  display: flex;
-  gap: 0;
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.model-option {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.model-option input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.model-option span {
-  display: block;
-  padding: 8px 16px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--muted);
-  background: var(--paper);
-  border-right: 1.5px solid var(--border);
-  transition: background 0.12s, color 0.12s;
-  user-select: none;
-}
-
-.model-option:last-child span {
-  border-right: none;
-}
-
-.model-option input[type="radio"]:checked + span {
-  background: var(--accent);
-  color: #fff;
-}
-
-.model-option span:hover {
-  background: #e8f3f1;
-  color: var(--ink);
-}
-
-.model-option input[type="radio"]:checked + span:hover {
-  background: var(--accent-dark);
-  color: #fff;
+  font-size: 0.9rem;
 }
 
 /* ---------- Result model label ---------- */
